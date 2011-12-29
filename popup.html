@@ -47,8 +47,14 @@ function AmazonStoreSwitcher() {
 
 		self.tab = tab;
 
+		match = tab.url.match(/amazon.*?\/dp\/([A-Z|0-9]+)/);
+
+		if (match === null) {
+			return;
+		}
+
 		self.stores.forEach(function(store) {
-			store.url = tab.url.replace(/amazon\.[a-z|\.]+/, 'amazon' + store.domain);
+			store.url = 'http://www.amazon' + store.domain + '/dp/' + match[1];
 			self.addButton(store);
 		});
 	});
