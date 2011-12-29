@@ -7,8 +7,6 @@
 		"popup": "popup.html"
 	},
 	"permissions": [
-		"tabs", 
-		"http://*/*", 
-		"https://*/*"
+		"tabs"
 	]
 }
