@@ -10,6 +10,10 @@ function AmazonStoreSwitcher() {
 
 	var self = this;
 
+	if (!window.localStorage.urls) {
+		window.localStorage.urls = [];
+	}
+
 	this.element = document.getElementById('switcher');
 
 	this.stores = [
@@ -36,48 +40,51 @@ function AmazonStoreSwitcher() {
 		self.tab = tab;
 
 		self.stores.forEach(function(store) {
+			store.url = tab.url.replace(/amazon\.[a-z|\.]+/, 'amazon' + store.domain);
 			self.addButton(store);
 		});
 	});
 }
 
-AmazonStoreSwitcher.prototype.newLink = function (url, store) {
+AmazonStoreSwitcher.prototype.appendButton = function (store) {
 
 	var self = this,
-		li = document.createElement('li')
+		li = document.createElement('li'),
 		a = document.createElement('a');
 
 	a.appendChild(document.createTextNode(store.name));
 	a.setAttribute('data-domain', store.domain);
 	a.href = "javasript:void();";
 	a.onclick = function () {
-		chrome.tabs.update(self.tab.id, { url: url });
+		chrome.tabs.update(self.tab.id, { url: store.url });
 	};
 
 	li.appendChild(a);
 
-	return li;
-};
-
-AmazonStoreSwitcher.prototype.buildURL = function (domain) {
-	return this.tab.url.replace(/amazon\.[a-z|\.]+/, 'amazon' + domain);
+	this.element.appendChild(li);
 };
 
 AmazonStoreSwitcher.prototype.addButton = function (store) {
 
-	var self = this,
-		req = new XMLHttpRequest(),
-		url = this.buildURL(store.domain);
+	var req,
+		url = window.localStorage[store.url],
+		self = this;
 
-	req.open('GET', url, true);
-	req.onreadystatechange = function (response) {
-		if (req.readyState === 4) {
-			if (req.status === 200) {
-				self.element.appendChild(self.newLink(url, store));
+	if (typeof url === 'string') {
+		this.appendButton(store);
+	} else {
+		req = new XMLHttpRequest(),
+		req.open('GET', store.url, true);
+		req.onreadystatechange = function (response) {
+			if (req.readyState === 4) {
+				if (req.status === 200) {
+					window.localStorage[store.url] = store.url;
+					self.appendButton(store);
+				}
 			}
-		}
-	};
-	req.send('');
+		};
+		req.send('');
+	}
 };
 
 var Switcher = new AmazonStoreSwitcher();
