@@ -18,20 +18,32 @@ function AmazonStoreSwitcher() {
 
 	this.stores = [
 		{
-			name: "USA",
-			domain: ".com"
+			name: 'Canada',
+			domain: '.ca'
 		}, {
-			name: "UK",
-			domain: ".co.uk"
+			name: 'China',
+			domain: '.cn'
 		}, {
-			name: "Canada",
-			domain: ".ca"
+			name: 'France',
+			domain: '.fr'
 		}, {
-			name: "Spain",
-			domain: ".es"
+			name: 'Germany',
+			domain: '.de'
 		}, {
-			name: "Japan",
-			domain: ".co.jp"
+			name: 'Italy',
+			domain: '.it'
+		}, {
+			name: 'Japan',
+			domain: '.co.jp'
+		}, {
+			name: 'Spain',
+			domain: '.es'
+		}, {
+			name: 'UK',
+			domain: '.co.uk'
+		}, {
+			name: 'USA',
+			domain: '.com'
 		}
 	];
 
@@ -54,7 +66,7 @@ AmazonStoreSwitcher.prototype.appendButton = function (store) {
 
 	a.appendChild(document.createTextNode(store.name));
 	a.setAttribute('data-domain', store.domain);
-	a.href = "javasript:void();";
+	a.href = 'javasript:void();';
 	a.onclick = function () {
 		chrome.tabs.update(self.tab.id, { url: store.url });
 	};
