@@ -1,0 +1,85 @@
+
+<div style="min-width:200px">
+	<p>Switch to Amazon:</p>
+	<ul id="switcher"></ul>
+</div>
+
+<script>
+
+function AmazonStoreSwitcher() {
+
+	var self = this;
+
+	this.element = document.getElementById('switcher');
+
+	this.stores = [
+		{
+			name: "USA",
+			domain: ".com"
+		}, {
+			name: "UK",
+			domain: ".co.uk"
+		}, {
+			name: "Canada",
+			domain: ".ca"
+		}, {
+			name: "Spain",
+			domain: ".es"
+		}, {
+			name: "Japan",
+			domain: ".co.jp"
+		}
+	];
+
+	chrome.tabs.getSelected(null, function (tab) {
+
+		self.tab = tab;
+
+		self.stores.forEach(function(store) {
+			self.addButton(store);
+		});
+	});
+}
+
+AmazonStoreSwitcher.prototype.newLink = function (url, store) {
+
+	var self = this,
+		li = document.createElement('li')
+		a = document.createElement('a');
+
+	a.appendChild(document.createTextNode(store.name));
+	a.setAttribute('data-domain', store.domain);
+	a.href = "javasript:void();";
+	a.onclick = function () {
+		chrome.tabs.update(self.tab.id, { url: url });
+	};
+
+	li.appendChild(a);
+
+	return li;
+};
+
+AmazonStoreSwitcher.prototype.buildURL = function (domain) {
+	return this.tab.url.replace(/amazon\.[a-z|\.]+/, 'amazon' + domain);
+};
+
+AmazonStoreSwitcher.prototype.addButton = function (store) {
+
+	var self = this,
+		req = new XMLHttpRequest(),
+		url = this.buildURL(store.domain);
+
+	req.open('GET', url, true);
+	req.onreadystatechange = function (response) {
+		if (req.readyState === 4) {
+			if (req.status === 200) {
+				self.element.appendChild(self.newLink(url, store));
+			}
+		}
+	};
+	req.send('');
+};
+
+var Switcher = new AmazonStoreSwitcher();
+
+</script>
