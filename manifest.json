@@ -7,6 +7,14 @@
 		"popup": "popup.html"
 	},
 	"permissions": [
-		"tabs"
+		"tabs",
+		"http://www.amazon.ca/*",
+		"http://www.amazon.cn/*",
+		"http://www.amazon.co.jp/*",
+		"http://www.amazon.co.uk/*",
+		"http://www.amazon.com/*",
+		"http://www.amazon.de/*",
+		"http://www.amazon.es/*",
+		"http://www.amazon.fr/*"
 	]
 }
