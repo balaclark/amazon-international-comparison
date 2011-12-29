@@ -15,6 +15,7 @@
 		"http://www.amazon.com/*",
 		"http://www.amazon.de/*",
 		"http://www.amazon.es/*",
-		"http://www.amazon.fr/*"
+		"http://www.amazon.fr/*",
+		"http://www.amazon.it/*"
 	]
 }
