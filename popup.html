@@ -8,8 +8,6 @@
 
 function AmazonStoreSwitcher() {
 
-	var self = this;
-
 	this.element = document.getElementById('switcher');
 
 	this.stores = [
@@ -43,18 +41,29 @@ function AmazonStoreSwitcher() {
 		}
 	];
 
+	this.render();
+}
+
+AmazonStoreSwitcher.prototype.render = function () {
+
+	var match, self = this;
+
+	this.element.innerHTML = '';
+
 	chrome.tabs.getSelected(null, function (tab) {
 
 		self.tab = tab;
 
-		match = tab.url.match(/amazon.*?\/dp\/([A-Z|0-9]+)/);
+		match = tab.url.match(/amazon.*?\/([d|g]p)\/(product\/)?([A-Z|0-9]+)/);
 
 		if (match === null) {
 			return;
 		}
 
+		var filler = (typeof match[2] === 'string') ? match[2] : '';
+
 		self.stores.forEach(function(store) {
-			store.url = 'http://www.amazon' + store.domain + '/dp/' + match[1];
+			store.url = 'http://www.amazon' + store.domain + '/' + match[1] + '/' + filler + match[3];
 			self.addButton(store);
 		});
 	});
@@ -64,16 +73,22 @@ AmazonStoreSwitcher.prototype.appendButton = function (store) {
 
 	var self = this,
 		li = document.createElement('li'),
-		a = document.createElement('a');
+		a = document.createElement('a'),
+		text = document.createTextNode(store.name);
 
-	a.appendChild(document.createTextNode(store.name));
-	a.setAttribute('data-domain', store.domain);
-	a.href = 'javasript:void();';
-	a.onclick = function () {
-		chrome.tabs.update(self.tab.id, { url: store.url });
-	};
+	if (store.domain === this.tab.url.match(/http:\/\/www.amazon([\.|a-z]+)\//)[1]) {
+		li.appendChild(text);
+	} else {
+		a.appendChild(text);
+		a.setAttribute('data-domain', store.domain);
+		a.href = 'javasript:void();';
+		a.onclick = function () {
+			chrome.tabs.update(self.tab.id, { url: store.url });
+			self.render();
+		};
 
-	li.appendChild(a);
+		li.appendChild(a);
+	}
 
 	this.element.appendChild(li);
 };
