@@ -11,27 +11,27 @@ function AmazonStore(store) {
 	this.domain = store.domain;
 }
 
-AmazonStore.prototype.set = function (property, value) {
+AmazonStore.prototype.getKey = function (property) {
+	return this.domain + this.productId + property;
+}
 
-	var key = this.domain + property;
+AmazonStore.prototype.set = function (property, value) {
 
 	if (this.hasOwnProperty(property)) {
 		this[property] = value;
 	} else {
-		window.localStorage[key] = value;
+		window.localStorage[this.getKey(property)] = value;
 	}
 };
 
 AmazonStore.prototype.get = function (property) {
 
-	var key = this.domain + property;
-
 	if (this.hasOwnProperty(property)) {
 		return this[property];
 	}
 
-	if (window.localStorage.hasOwnProperty(key)) {
-		return window.localStorage[key];
+	if (window.localStorage.hasOwnProperty(this.getKey(property))) {
+		return window.localStorage[this.getKey(property)];
 	}
 
 	return null;
@@ -85,7 +85,7 @@ AmazonStoreSwitcher.prototype.appendButton = function (store) {
 	var self = this,
 		li = document.createElement('li'),
 		a = document.createElement('a'),
-		text = document.createTextNode(store.name);
+		text = document.createTextNode(store.name + ' ' + store.get('price'));
 
 	if (store.domain === this.tab.url.match(/http:\/\/www.amazon([\.|a-z]+)\//)[1]) {
 		li.appendChild(text);
@@ -106,25 +106,27 @@ AmazonStoreSwitcher.prototype.appendButton = function (store) {
 
 AmazonStoreSwitcher.prototype.addButton = function (store) {
 
-	var req,
-		self = this,
-		productUrl = store.get(store.area + store.productId);
+	var req, self = this;
 
-	if (productUrl) {
+/*	if (store.get('url')) {
 		self.appendButton(store);
 	} else {
+		*/
 		req = new XMLHttpRequest(),
 		req.open('GET', store.url, true);
-		req.onreadystatechange = function (response) {
+		req.onreadystatechange = function () {
 			if (req.readyState === 4) {
 				if (req.status === 200) {
-					store.set(store.area + store.productId, store.url);
+
+					store.set('price', req.responseText.match(/<b class="priceLarge(?:.*?)?">(.+?)<\/b>/)[1]);
+					store.set('url', store.url);
+
 					self.appendButton(store);
 				}
 			}
 		};
 		req.send('');
-	}
+	//}
 };
 
 new AmazonStoreSwitcher([
