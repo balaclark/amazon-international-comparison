@@ -6,40 +6,47 @@
 
 <script>
 
-function AmazonStoreSwitcher() {
+function AmazonStore(store) {
+	this.name = store.name;
+	this.domain = store.domain;
+}
 
+AmazonStore.prototype.set = function (property, value) {
+
+	var key = this.domain + property;
+
+	if (this.hasOwnProperty(property)) {
+		this[property] = value;
+	} else {
+		window.localStorage[key] = value;
+	}
+};
+
+AmazonStore.prototype.get = function (property) {
+
+	var key = this.domain + property;
+
+	if (this.hasOwnProperty(property)) {
+		return this[property];
+	}
+
+	if (window.localStorage.hasOwnProperty(key)) {
+		return window.localStorage[key];
+	}
+
+	return null;
+};
+
+function AmazonStoreSwitcher(stores) {
+
+	var self = this;
+
+	this.stores = [];
 	this.element = document.getElementById('switcher');
 
-	this.stores = [
-		{
-			name: 'Canada',
-			domain: '.ca'
-		}, {
-			name: 'China',
-			domain: '.cn'
-		}, {
-			name: 'France',
-			domain: '.fr'
-		}, {
-			name: 'Germany',
-			domain: '.de'
-		}, {
-			name: 'Italy',
-			domain: '.it'
-		}, {
-			name: 'Japan',
-			domain: '.co.jp'
-		}, {
-			name: 'Spain',
-			domain: '.es'
-		}, {
-			name: 'UK',
-			domain: '.co.uk'
-		}, {
-			name: 'USA',
-			domain: '.com'
-		}
-	];
+	stores.forEach(function (store) {
+		self.stores.push(new AmazonStore(store));
+	});
 
 	this.render();
 }
@@ -63,7 +70,11 @@ AmazonStoreSwitcher.prototype.render = function () {
 		var filler = (typeof match[2] === 'string') ? match[2] : '';
 
 		self.stores.forEach(function(store) {
-			store.url = 'http://www.amazon' + store.domain + '/' + match[1] + '/' + filler + match[3];
+
+			store.area = match[1];
+			store.productId = match[3];
+			store.url = 'http://www.amazon' + store.domain + '/' + store.area + '/' + filler + store.productId;
+
 			self.addButton(store);
 		});
 	});
@@ -96,18 +107,18 @@ AmazonStoreSwitcher.prototype.appendButton = function (store) {
 AmazonStoreSwitcher.prototype.addButton = function (store) {
 
 	var req,
-		url = window.localStorage[store.url],
-		self = this;
+		self = this,
+		productUrl = store.get(store.area + store.productId);
 
-	if (typeof url === 'string') {
-		this.appendButton(store);
+	if (productUrl) {
+		self.appendButton(store);
 	} else {
 		req = new XMLHttpRequest(),
 		req.open('GET', store.url, true);
 		req.onreadystatechange = function (response) {
 			if (req.readyState === 4) {
 				if (req.status === 200) {
-					window.localStorage[store.url] = store.url;
+					store.set(store.area + store.productId, store.url);
 					self.appendButton(store);
 				}
 			}
@@ -116,6 +127,16 @@ AmazonStoreSwitcher.prototype.addButton = function (store) {
 	}
 };
 
-var Switcher = new AmazonStoreSwitcher();
+new AmazonStoreSwitcher([
+	{ name: "Canada", domain: ".ca" },
+	{ name: "China", domain: ".cn" },
+	{ name: "Japan", domain: ".co.jp" },
+	{ name: "UK", domain: ".co.uk" },
+	{ name: "USA", domain: ".com" },
+	{ name: "Germany", domain: ".de" },
+	{ name: "Spain", domain: ".es" },
+	{ name: "France", domain: ".fr" },
+	{ name: "Italy", domain: ".it" }
+]);
 
 </script>
